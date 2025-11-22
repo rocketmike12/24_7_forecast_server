@@ -17,25 +17,7 @@ export const initDB = function (db) {
 	);
 };
 
-const dbExec = async (db, sql, params = []) => {
-	if (params && params.length > 0) {
-		return new Promise((resolve, reject) => {
-			db.run(sql, params, (err) => {
-				if (err) reject(err);
-				resolve();
-			});
-		});
-	}
-
-	return new Promise((resolve, reject) => {
-		db.exec(sql, (err) => {
-			if (err) reject(err);
-			resolve();
-		});
-	});
-};
-
-export const addUser = function (db, username, pass) {
+export const addUserSql = function (db, username, pass) {
 	return new Promise((resolve, reject) => {
 		db.run(`INSERT INTO users(username, pass) VALUES(?, ?)`, [username, pass], (err) => {
 			if (err) reject(err);
@@ -44,20 +26,29 @@ export const addUser = function (db, username, pass) {
 	});
 };
 
-export const getUser = function (db, username, pass) {
+export const getUserSql = function (db, username, pass) {
 	return new Promise((resolve, reject) => {
 		db.get(`SELECT * FROM users WHERE username = ? AND pass = ?`, [username, pass], (err, row) => {
 			if (err) reject(err);
+
+			if (!row) reject(new Error("login incorrect"));
+
 			resolve(row);
 		});
 	});
 };
 
-export const delUser = function (db, username) {
+export const delUserSql = function (db, username, pass) {
 	return new Promise((resolve, reject) => {
-		db.run(`DELETE FROM users WHERE username = ?`, [username], (err) => {
+		db.get(`SELECT * FROM users WHERE username = ? AND pass = ?`, [username, pass], (err, row) => {
 			if (err) reject(err);
-			resolve();
+
+			if (!row) reject(new Error("login incorrect"));
+
+			db.run(`DELETE FROM users WHERE username = ? AND pass = ?`, [username, pass], (err) => {
+				if (err) reject(err);
+				resolve();
+			});
 		});
 	});
 };

@@ -2,7 +2,8 @@ import express from "express";
 // import "cors";
 import sqlite3 from "sqlite3";
 
-import { initDB, addUser, getUser, delUser } from "./sql.js";
+import { initDB } from "./sql.js";
+import { addUser, getUser, delUser } from "./user_operations.js";
 
 const app = express();
 
@@ -27,6 +28,8 @@ app.get("/api/v0/", (req, res) => {
 });
 
 app.get("/api/v0/auth/register/:username/:pass/", async (req, res) => {
+	res.set("Content-Type", "text/plain");
+
 	const username = req.params.username;
 	const pass = req.params.pass;
 
@@ -34,7 +37,7 @@ app.get("/api/v0/auth/register/:username/:pass/", async (req, res) => {
 		await addUser(db, username, pass);
 		res.status(201).send(`user ${username} created successfully`);
 	} catch (err) {
-		res.status(406).send(`user ${username} not created:\n${err}`);
+		res.status(406).send(`user ${username} not created: ${err.message}`);
 	}
 });
 
@@ -44,16 +47,30 @@ app.get("/api/v0/auth/login/:username/:pass/", async (req, res) => {
 
 	try {
 		let userData = await getUser(db, username, pass);
-
-		if (!userData) {
-			res.status(401).send("login incorrect");
-		} else {
-			console.log(userData);
-
-			res.status(200).json(JSON.stringify(userData));
-		}
+		res.status(200).json(userData);
 	} catch (err) {
-		res.status(500).send(`failed to get user:\n${err}`);
+		res.set("Content-Type", "text/plain");
+
+		if (err.message === "login incorrect") {
+			res.status(401).send(err.message);
+		}
+
+		res.status(500).send(`failed to get user: ${err}`);
+	}
+});
+
+
+app.get("/api/v0/auth/delete/:username/:pass/", async (req, res) => {
+	res.set("Content-Type", "text/plain");
+
+	const username = req.params.username;
+	const pass = req.params.pass;
+
+	try {
+		await delUser(db, username, pass);
+		res.status(201).send(`user ${username} deleted successfully`);
+	} catch (err) {
+		res.status(406).send(`user ${username} not deleted: ${err.message}`);
 	}
 });
 
