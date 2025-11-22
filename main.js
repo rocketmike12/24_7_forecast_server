@@ -32,11 +32,9 @@ app.get("/api/v0/auth/register/:username/:pass/", async (req, res) => {
 
 	try {
 		await addUser(db, username, pass);
-		res.statusCode = 201;
-		res.send(`user ${username} created successfully`);
+		res.status(201).send(`user ${username} created successfully`);
 	} catch (err) {
-		res.statusCode = 406;
-		res.send(`user ${username} not created:\n${err}`);
+		res.status(406).send(`user ${username} not created:\n${err}`);
 	}
 });
 
@@ -52,7 +50,7 @@ app.get("/api/v0/auth/login/:username/:pass/", async (req, res) => {
 		} else {
 			console.log(userData);
 
-			res.status(500).send(`user data for ${username}:\n${userData}`);
+			res.status(200).json(JSON.stringify(userData));
 		}
 	} catch (err) {
 		res.status(500).send(`failed to get user:\n${err}`);

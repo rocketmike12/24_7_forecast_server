@@ -46,7 +46,7 @@ export const addUser = function (db, username, pass) {
 
 export const getUser = function (db, username, pass) {
 	return new Promise((resolve, reject) => {
-		db.run(`SELECT * FROM users WHERE username = ? AND pass = ?`, [username, pass], (err, row) => {
+		db.get(`SELECT * FROM users WHERE username = ? AND pass = ?`, [username, pass], (err, row) => {
 			if (err) reject(err);
 			resolve(row);
 		});
