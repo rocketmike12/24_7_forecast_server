@@ -1,34 +1,34 @@
-export const initDB = function (db) {
+export const schema = function (db) {
 	db.exec(
 		`
 			CREATE TABLE IF NOT EXISTS users (
 				id INTEGER PRIMARY KEY,
 				username TEXT NOT NULL UNIQUE,
-				pass TEXT NOT NULL
+				hash TEXT NOT NULL
 			)
 		`,
 		(err) => {
 			if (err) {
 				console.log("DB: error: " + err);
 			} else {
-				console.log("DB: CREATE TABLE users");
+				console.log("DB: schema");
 			}
 		}
 	);
 };
 
-export const addUserSql = function (db, username, pass) {
+export const addUserSql = function (db, username, hash) {
 	return new Promise((resolve, reject) => {
-		db.run(`INSERT INTO users(username, pass) VALUES(?, ?)`, [username, pass], (err) => {
+		db.run(`INSERT INTO users(username, hash) VALUES(?, ?)`, [username, hash], (err) => {
 			if (err) reject(err);
-			resolve();
+			resolve("ok");
 		});
 	});
 };
 
-export const getUserSql = function (db, username, pass) {
+export const getUserSql = function (db, username) {
 	return new Promise((resolve, reject) => {
-		db.get(`SELECT * FROM users WHERE username = ? AND pass = ?`, [username, pass], (err, row) => {
+		db.get(`SELECT * FROM users WHERE username = ?`, [username], (err, row) => {
 			if (err) reject(err);
 
 			if (!row) reject(new Error("login incorrect"));
@@ -38,17 +38,11 @@ export const getUserSql = function (db, username, pass) {
 	});
 };
 
-export const delUserSql = function (db, username, pass) {
+export const delUserSql = function (db, username) {
 	return new Promise((resolve, reject) => {
-		db.get(`SELECT * FROM users WHERE username = ? AND pass = ?`, [username, pass], (err, row) => {
+		db.run(`DELETE FROM users WHERE username = ?`, [username], (err) => {
 			if (err) reject(err);
-
-			if (!row) reject(new Error("login incorrect"));
-
-			db.run(`DELETE FROM users WHERE username = ? AND pass = ?`, [username, pass], (err) => {
-				if (err) reject(err);
-				resolve();
-			});
+			resolve("ok");
 		});
 	});
 };
