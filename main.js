@@ -39,51 +39,54 @@ function authenticateToken(req, res, next) {
 // 	}
 // });
 
-// app.post("/api/v0/auth/register/", async (req, res) => {
-// 	res.set("Content-Type", "text/plain");
-//
-// 	// if (!whitelist.includes(req.ip)) return res.status(403).send("403 access denied");
-//
-// 	const { username, password } = req.body;
-//
-// 	try {
-// 		await addUser(db, username, password);
-//
-// 		const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
-//
-// 		res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
-// 		return res.status(200).send("ok");
-// 	} catch (err) {
-// 		return res.status(406).send(`user ${username} not created: ${err.message}`);
-// 	}
-// });
-//
-// app.post("/api/v0/auth/login/", async (req, res) => {
-// 	const { username, password } = req.body;
-//
-// 	// if (!whitelist.includes(req.ip)) {
-// 	// 	res.set("Content-Type", "text/plain");
-// 	// 	return res.status(403).send("403 access denied");
-// 	// }
-//
-// 	try {
-// 		let userData = await getUser(db, username, password);
-//
-// 		const token = jwt.sign(userData.username, process.env.ACCESS_TOKEN_SECRET);
-//
-// 		res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
-// 		return res.status(200).send("ok");
-// 	} catch (err) {
-// 		res.set("Content-Type", "text/plain");
-//
-// 		if (err.message === "login incorrect") {
-// 			return res.status(401).send(err.message);
-// 		}
-//
-// 		return res.status(500).send(`failed to get user: ${err}`);
-// 	}
-// });
-//
+app.post("/api/v0/auth/register/", async (req, res) => {
+	// if (!whitelist.includes(req.ip)) return res.status(403).send("403 access denied");
+
+	const { username, password } = req.body;
+
+	try {
+		const userData = await addUser(username, password);
+
+		// const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
+
+		// res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
+		
+		return res.status(200).json(userData);
+	} catch (err) {
+		res.set("Content-Type", "text/plain");
+
+		return res.status(500).send(`user ${username} not created: ${err.message}`);
+	}
+});
+
+app.post("/api/v0/auth/login/", async (req, res) => {
+	const { username, password } = req.body;
+
+	// if (!whitelist.includes(req.ip)) {
+	// 	res.set("Content-Type", "text/plain");
+	// 	return res.status(403).send("403 access denied");
+	// }
+
+	try {
+		let userData = await getUser(username, password);
+
+		if (!userData) throw new Error("login incorrect");
+
+		// const token = jwt.sign(userData.username, process.env.ACCESS_TOKEN_SECRET);
+
+		// res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
+		return res.status(200).json(userData);
+	} catch (err) {
+		res.set("Content-Type", "text/plain");
+
+		if (err.message === "login incorrect") {
+			return res.status(401).send("401 unauthorized: login incorrect");
+		}
+
+		return res.status(500).send(`failed to get user: ${err}`);
+	}
+});
+
 // app.post("/api/v0/auth/confirm/", authenticateToken, (req, res, next) => {
 // 	res.json(req.user);
 // });

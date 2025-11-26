@@ -1,11 +1,11 @@
 import { User } from "./models/user.js";
 
-export const addUser = function (db, username, hash) {
+export const addUser = function (username, password) {
 	return new Promise((resolve, reject) => {
 		try {
 			const user = User.create({
 				username: username,
-				password: hash
+				password: password
 			});
 
 			resolve(user);
@@ -15,7 +15,7 @@ export const addUser = function (db, username, hash) {
 	});
 };
 
-export const getUser = function (db, username) {
+export const getUser = function (username) {
 	return new Promise((resolve, reject) => {
 		try {
 			const user = User.findOne({ username: username }).exec();
