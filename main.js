@@ -31,26 +31,6 @@ function authenticateToken(req, res, next) {
 	});
 }
 
-app.post("/api/v0/auth/register/", async (req, res) => {
-	// if (!whitelist.includes(req.ip)) return res.status(403).send("403 access denied");
-
-	const { username, password } = req.body;
-
-	try {
-		const userData = await addUser(username, password);
-
-		// const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
-
-		// res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
-		
-		return res.status(200).json(userData);
-	} catch (err) {
-		res.set("Content-Type", "text/plain");
-
-		return res.status(500).send(`user ${username} not created: ${err.message}`);
-	}
-});
-
 app.post("/api/v0/auth/login/", async (req, res) => {
 	const { username, password } = req.body;
 
@@ -77,6 +57,26 @@ app.post("/api/v0/auth/login/", async (req, res) => {
 		}
 
 		return res.status(500).send(`failed to get user: ${err}`);
+	}
+});
+
+app.post("/api/v0/auth/register/", async (req, res) => {
+	// if (!whitelist.includes(req.ip)) return res.status(403).send("403 access denied");
+
+	const { username, password } = req.body;
+
+	try {
+		const userData = await addUser(username, password);
+
+		// const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
+
+		// res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
+
+		return res.status(200).json(userData);
+	} catch (err) {
+		res.set("Content-Type", "text/plain");
+
+		return res.status(500).send(`user ${username} not created: ${err.message}`);
 	}
 });
 
