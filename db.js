@@ -1,23 +1,34 @@
+import bcrypt from "bcrypt";
+
 import { User } from "./models/user.js";
 
-export const getUser = function (username) {
-	return new Promise((resolve, reject) => {
+export const getUser = function (username, password) {
+	return new Promise(async (resolve, reject) => {
 		try {
-			const user = User.findOne({ username: username }).exec();
+			const user = await User.findOne({ username: username }).exec();
+			if (!user) throw new Error("login incorrect");
+
+			const match = await bcrypt.compare(password, user.password);
+			if (!match) throw new Error("login incorrect");
 
 			resolve(user);
 		} catch (err) {
+			console.error(err);
 			reject(err);
 		}
 	});
 };
 
 export const addUser = function (username, password) {
-	return new Promise((resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		try {
+			if (await User.findOne({ username: username }).exec()) throw new Error("user already exists");
+
+			const hash = await bcrypt.hash(password, 8);
+
 			const user = User.create({
 				username: username,
-				password: password
+				password: hash
 			});
 
 			resolve(user);

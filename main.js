@@ -16,8 +16,6 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-const whitelist = ["::ffff:127.0.0.1"];
-
 function authenticateToken(req, res, next) {
 	const authCookie = req.cookies["authcookie"];
 
@@ -34,15 +32,10 @@ function authenticateToken(req, res, next) {
 app.post("/api/v0/auth/login/", async (req, res) => {
 	const { username, password } = req.body;
 
-	// if (!whitelist.includes(req.ip)) {
-	// 	res.set("Content-Type", "text/plain");
-	// 	return res.status(403).send("403 access denied");
-	// }
-
 	try {
 		let userData = await getUser(username, password);
 
-		if (!userData) throw new Error("login incorrect");
+		if (!userData) throw new Error(userData);
 
 		// const token = jwt.sign(userData.username, process.env.ACCESS_TOKEN_SECRET);
 
@@ -56,13 +49,11 @@ app.post("/api/v0/auth/login/", async (req, res) => {
 			return res.status(401).send("401 unauthorized: login incorrect");
 		}
 
-		return res.status(500).send(`failed to get user: ${err}`);
+		return res.status(500).send(`failed to get user: ${err.message}`);
 	}
 });
 
 app.post("/api/v0/auth/register/", async (req, res) => {
-	// if (!whitelist.includes(req.ip)) return res.status(403).send("403 access denied");
-
 	const { username, password } = req.body;
 
 	try {
@@ -86,8 +77,6 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 
 // app.delete("/api/v0/auth/delete/", async (req, res) => {
 // 	res.set("Content-Type", "text/plain");
-//
-// 	// if (!whitelist.includes(req.ip)) return res.status(403).send("403 access denied");
 //
 // 	const { username, password } = req.body;
 //
