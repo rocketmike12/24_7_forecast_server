@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -9,12 +10,25 @@ import { connectDb } from "./config/connectDb.js";
 import { addUser, getUser } from "./db.js";
 import mongoose from "mongoose";
 
-connectDb();
+let whitelist = ["http://127.0.0.1:3000"];
+
+var corsOpts = {
+	origin: function (origin, callback) {
+		if (whitelist.includes(origin)) {
+			callback(null, true);
+		} else {
+			callback(new Error("Not allowed by CORS"));
+		}
+	}
+};
 
 const app = express();
 
+app.use(cors(corsOpts));
 app.use(express.json());
 app.use(cookieParser());
+
+connectDb();
 
 function authenticateToken(req, res, next) {
 	const authCookie = req.cookies["authcookie"];
@@ -71,27 +85,9 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 	}
 });
 
-// app.post("/api/v0/auth/confirm/", authenticateToken, (req, res, next) => {
-// 	res.json(req.user);
-// });
-
-// app.delete("/api/v0/auth/delete/", async (req, res) => {
-// 	res.set("Content-Type", "text/plain");
-//
-// 	const { username, password } = req.body;
-//
-// 	try {
-// 		await delUser(db, username, password);
-//
-// 		return res.status(201).send(`user ${username} deleted successfully`);
-// 	} catch (err) {
-// 		if (err.message === "login incorrect") {
-// 			return res.status(401).send(err.message);
-// 		}
-//
-// 		return res.status(500).send(`user ${username} not deleted: ${err.message}`);
-// 	}
-// });
+app.post("/api/v0/auth/validate/", authenticateToken, (req, res, next) => {
+	res.json(req.user);
+});
 
 mongoose.connection.once("open", () => {
 	app.listen(8080, () => {
