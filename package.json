@@ -5,7 +5,7 @@
 	"type": "module",
 	"main": "main.js",
 	"scripts": {
-		"dev": "nodemon main.js",
+		"dev": "NODE_ENV=dev nodemon main.js",
 		"start": "node main.js"
 	},
 	"devDependencies": {

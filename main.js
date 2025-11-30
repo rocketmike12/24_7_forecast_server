@@ -10,17 +10,20 @@ import { connectDb } from "./config/connectDb.js";
 import { addUser, getUser } from "./db.js";
 import mongoose from "mongoose";
 
-let whitelist = ["http://127.0.0.1:3000"];
+let whitelist = ["http://localhost:5173", "https://rocketmike12.github.io"];
 
-var corsOpts = {
+const corsOpts = {
 	origin: function (origin, callback) {
 		if (whitelist.includes(origin)) {
 			callback(null, true);
 		} else {
 			callback(new Error("Not allowed by CORS"));
 		}
-	}
+	},
+	credentials: true
 };
+
+const cookieOpts = process.env.NODE_ENV === "dev" ? { maxAge: 900000, httpOnly: true } : { maxAge: 900000, httpOnly: true, sameSite: "none", secure: true };
 
 const app = express();
 
@@ -73,9 +76,9 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 	try {
 		const userData = await addUser(username, password);
 
-		// const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
+		const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
 
-		// res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
+		res.cookie("authcookie", token, cookieOpts);
 
 		return res.status(200).json(userData);
 	} catch (err) {
