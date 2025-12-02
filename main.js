@@ -23,7 +23,7 @@ const corsOpts = {
 	credentials: true
 };
 
-const cookieOpts = process.env.NODE_ENV === "dev" ? { maxAge: 900000, httpOnly: true, partitioned: true } : { maxAge: 900000, httpOnly: true, sameSite: "none", secure: true, partitioned: true };
+const cookieOpts = process.env.NODE_ENV === "dev" ? { maxAge: 900000, httpOnly: true } : { maxAge: 900000, httpOnly: true, sameSite: "none", secure: true, partitioned: true };
 
 const app = express();
 
