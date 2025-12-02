@@ -78,7 +78,8 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 
 		const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
 
-		res.cookie("authcookie", token, cookieOpts);
+		res.setHeader("Set-Cookie", `authcookie=${token}; HttpOnly; Secure; SameSite=none; Partitioned`);
+		// res.cookie("authcookie", token, cookieOpts);
 
 		return res.status(200).json(userData);
 	} catch (err) {
