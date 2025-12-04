@@ -33,7 +33,7 @@ app.use(cookieParser());
 
 connectDb();
 
-function authenticateToken(req, res, next) {
+const authenticateToken = function (req, res, next) {
 	const authCookie = req.cookies["authcookie"];
 
 	if (authCookie == null) return res.sendStatus(401);
@@ -44,7 +44,7 @@ function authenticateToken(req, res, next) {
 		req.user = user;
 		next();
 	});
-}
+};
 
 app.post("/api/v0/auth/login/", async (req, res) => {
 	const { username, password } = req.body;
@@ -78,8 +78,7 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 
 		const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
 
-		res.setHeader("Set-Cookie", `authcookie=${token}; HttpOnly; Secure; SameSite=none; Partitioned`);
-		// res.cookie("authcookie", token, cookieOpts);
+		res.cookie("authcookie", token, cookieOpts);
 
 		return res.status(200).json(userData);
 	} catch (err) {
@@ -90,7 +89,8 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 });
 
 app.post("/api/v0/auth/validate/", authenticateToken, (req, res, next) => {
-	res.json(req.user);
+	res.set("Content-Type", "text/plain");
+	res.status(200).send("ok");
 });
 
 mongoose.connection.once("open", () => {
