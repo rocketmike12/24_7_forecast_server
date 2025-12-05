@@ -23,7 +23,8 @@ const corsOpts = {
 	credentials: true
 };
 
-const cookieOpts = process.env.NODE_ENV === "dev" ? { maxAge: 900000, httpOnly: true } : { maxAge: 900000, httpOnly: true, sameSite: "none", secure: true, partitioned: true };
+const cookieOpts =
+	process.env.NODE_ENV === "dev" ? { maxAge: 1000 * 60 * 60 * 24 * 2, httpOnly: true } : { maxAge: 1000 * 60 * 60 * 24 * 2, httpOnly: true, sameSite: "none", secure: true, partitioned: true };
 
 const app = express();
 
@@ -54,9 +55,8 @@ app.post("/api/v0/auth/login/", async (req, res) => {
 
 		if (!userData) throw new Error(userData);
 
-		// const token = jwt.sign(userData.username, process.env.ACCESS_TOKEN_SECRET);
-
-		// res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
+		const token = jwt.sign(userData.username, process.env.ACCESS_TOKEN_SECRET);
+		res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
 
 		return res.status(200).json(userData);
 	} catch (err) {
@@ -77,7 +77,6 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 		const userData = await addUser(username, password);
 
 		const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
-
 		res.cookie("authcookie", token, cookieOpts);
 
 		return res.status(200).json(userData);
@@ -88,7 +87,15 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 	}
 });
 
-app.post("/api/v0/auth/validate/", authenticateToken, (req, res, next) => {
+app.post("/api/v0/auth/session/", authenticateToken, (req, res) => {
+	res.set("Content-Type", "text/plain");
+
+	const token = jwt.sign(req.user, process.env.ACCESS_TOKEN_SECRET);
+	res.cookie("authcookie", token, cookieOpts);
+	return res.status(200).json(req.user);
+});
+
+app.post("/api/v0/auth/logout/", (req, res) => {
 	res.set("Content-Type", "text/plain");
 	res.status(200).send("ok");
 });
