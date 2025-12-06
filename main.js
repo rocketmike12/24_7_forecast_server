@@ -92,11 +92,15 @@ app.post("/api/v0/auth/session/", authenticateToken, (req, res) => {
 
 	const token = jwt.sign(req.user, process.env.ACCESS_TOKEN_SECRET);
 	res.cookie("authcookie", token, cookieOpts);
+
 	return res.status(200).json(req.user);
 });
 
 app.post("/api/v0/auth/logout/", (req, res) => {
 	res.set("Content-Type", "text/plain");
+
+	res.clearCookie("authcookie");
+
 	res.status(200).send("ok");
 });
 
