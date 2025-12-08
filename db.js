@@ -18,6 +18,20 @@ export const getUser = function (username, password) {
 	});
 };
 
+export const getFavorites = function (username) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const user = await User.findOne({ username: username }).exec();
+
+			if (!user) throw new Error("login incorrect");
+
+			resolve(user.favorites);
+		} catch (err) {
+			reject(err);
+		}
+	});
+};
+
 export const addUser = function (username, password) {
 	return new Promise(async (resolve, reject) => {
 		try {
@@ -27,9 +41,26 @@ export const addUser = function (username, password) {
 
 			const user = User.create({
 				username: username,
-				password: hash
+				password: hash,
+				favorites: []
 			});
 
+			resolve(user);
+		} catch (err) {
+			reject(err);
+		}
+	});
+};
+
+export const addFavorite = function (username, favorite) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			let user = await User.findOne({ username: username }).exec();
+			if (!user) throw new Error("login incorrect");
+
+			await User.updateOne({ _id: user._id }, { $push: { favorites: favorite } });
+
+			user = await User.findOne({ username: username }).exec();
 			resolve(user);
 		} catch (err) {
 			reject(err);

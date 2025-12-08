@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { connectDb } from "./config/connectDb.js";
-import { addUser, getUser } from "./db.js";
+import { getUser, getFavorites, addUser, addFavorite } from "./db.js";
 import mongoose from "mongoose";
 
 let whitelist = ["http://localhost:5173", "https://rocketmike12.github.io"];
@@ -35,15 +35,31 @@ app.use(cookieParser());
 
 connectDb();
 
-const authenticateToken = function (req, res, next) {
+const authenticateToken = async function (req, res, next) {
 	const authCookie = req.cookies["authcookie"];
 
-	if (authCookie == null) return res.sendStatus(401);
+	if (!authCookie) return res.status(401).send("401 unauthorized");
 
-	jwt.verify(authCookie, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+	jwt.verify(authCookie, process.env.ACCESS_TOKEN_SECRET, async (err, username) => {
 		if (err) return res.status(403).send("403 access denied");
 
-		req.user = user;
+		try {
+			let favorites = await getFavorites(username);
+
+			if (!favorites) throw new Error(favorites);
+
+			req.user = { username: username, favorites: favorites };
+		} catch (err) {
+			res.set("Content-Type", "text/plain");
+
+			if (err.message === "login incorrect") {
+				return res.status(401).send("401 unauthorized: login incorrect");
+			}
+
+			console.error(err);
+			return res.status(406).send(err);
+		}
+
 		next();
 	});
 };
@@ -59,7 +75,7 @@ app.post("/api/v0/auth/login/", async (req, res) => {
 		const token = jwt.sign(userData.username, process.env.ACCESS_TOKEN_SECRET);
 		res.cookie("authcookie", token, { maxAge: 900000, httpOnly: true });
 
-		return res.status(200).json(userData);
+		return res.status(200).json({ username: userData.username, favorites: userData.favorites });
 	} catch (err) {
 		res.set("Content-Type", "text/plain");
 
@@ -67,7 +83,8 @@ app.post("/api/v0/auth/login/", async (req, res) => {
 			return res.status(401).send("401 unauthorized: login incorrect");
 		}
 
-		return res.status(500).send(`failed to get user: ${err.message}`);
+		console.error(`failed to get user: ${err.message}`)
+		return res.sendStatus(500);
 	}
 });
 
@@ -77,32 +94,48 @@ app.post("/api/v0/auth/register/", async (req, res) => {
 	try {
 		const userData = await addUser(username, password);
 
-		const token = jwt.sign(username, process.env.ACCESS_TOKEN_SECRET);
+		const token = jwt.sign(userData.username, process.env.ACCESS_TOKEN_SECRET);
 		res.cookie("authcookie", token, cookieOpts);
 
-		return res.status(200).json(userData);
+		return res.status(200).json({ username: userData.username, favorites: userData.favorites });
 	} catch (err) {
 		res.set("Content-Type", "text/plain");
 
-		return res.status(500).send(`user ${username} not created: ${err.message}`);
+		console.error(`user ${username} not created: ${err.message}`);
+		return res.sendStatus(500);
 	}
 });
 
 app.post("/api/v0/auth/session/", authenticateToken, (req, res) => {
 	res.set("Content-Type", "text/plain");
 
-	const token = jwt.sign(req.user, process.env.ACCESS_TOKEN_SECRET);
+	const token = jwt.sign(req.user.username, process.env.ACCESS_TOKEN_SECRET);
 	res.cookie("authcookie", token, cookieOpts);
 
 	return res.status(200).json(req.user);
 });
 
-app.post("/api/v0/auth/logout/", (req, res) => {
+app.post("/api/v0/auth/logout/", authenticateToken, (req, res) => {
 	res.set("Content-Type", "text/plain");
 
 	res.clearCookie("authcookie");
 
-	res.status(200).send("ok");
+	res.sendStatus(200);
+});
+
+app.post("/api/v0/auth/favorite/", authenticateToken, async (req, res) => {
+	const { favorite } = req.body;
+
+	try {
+		const userData = await addFavorite(req.user.username, favorite);
+
+		return res.status(200).json({ favorites: userData.favorites });
+	} catch (err) {
+		res.set("Content-Type", "text/plain");
+
+		console.error(`favorite ${favorite} not added to ${req.user.username}: ${err}`);
+		return res.sendStatus(500);
+	}
 });
 
 mongoose.connection.once("open", () => {
