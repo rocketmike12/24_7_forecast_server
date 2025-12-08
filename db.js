@@ -57,6 +57,7 @@ export const addFavorite = function (username, favorite) {
 		try {
 			let user = await User.findOne({ username: username }).exec();
 			if (!user) throw new Error("login incorrect");
+			if (user.favorites.includes(favorite)) throw new Error("favorite already exists");	
 
 			await User.updateOne({ _id: user._id }, { $push: { favorites: favorite } });
 
