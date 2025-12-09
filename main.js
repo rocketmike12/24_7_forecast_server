@@ -2,8 +2,6 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import jwt from "jsonwebtoken";
-
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -11,6 +9,7 @@ import { connectDb } from "./config/connectDb.js";
 import mongoose from "mongoose";
 
 import { authenticateToken, loginHandler, registerHandler, sessionHandler, logoutHandler, favoriteHandler, cookieOpts } from "./handlers/auth.js";
+import { weatherHandler } from "./handlers/weather.js";
 
 let whitelist = ["http://localhost:5173", "https://rocketmike12.github.io"];
 
@@ -43,6 +42,8 @@ app.post("/api/v0/auth/session/", authenticateToken, sessionHandler);
 app.post("/api/v0/auth/logout/", authenticateToken, logoutHandler);
 
 app.post("/api/v0/auth/favorite/", authenticateToken, favoriteHandler);
+
+app.get("/api/v0/weather", weatherHandler);
 
 mongoose.connection.once("open", () => {
 	app.listen(8080, () => {
