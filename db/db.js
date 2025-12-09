@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 
-import { User } from "./models/user.js";
+import { User } from "../models/user.js";
 
 export const getUser = function (username, password) {
 	return new Promise(async (resolve, reject) => {
