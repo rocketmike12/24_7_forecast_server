@@ -34,7 +34,6 @@ export const weatherHandler = async function (req, res) {
 export const forecastHandler = async function (req, res) {
 	try {
 		const place = req.query.q;
-		console.log(place)
 		if (!place) return res.sendStatus(406);
 
 		let geoData = await geoApi.get("/direct", { params: { q: place } });
