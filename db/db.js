@@ -57,9 +57,26 @@ export const addFavorite = function (username, favorite) {
 		try {
 			let user = await User.findOne({ username: username }).exec();
 			if (!user) throw new Error("login incorrect");
-			if (user.favorites.includes(favorite)) throw new Error("favorite already exists");	
+			if (user.favorites.includes(favorite)) throw new Error("favorite already exists");
 
 			await User.updateOne({ _id: user._id }, { $push: { favorites: favorite } });
+
+			user = await User.findOne({ username: username }).exec();
+			resolve(user);
+		} catch (err) {
+			reject(err);
+		}
+	});
+};
+
+export const delFavorite = function (username, favorite) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			let user = await User.findOne({ username: username }).exec();
+			if (!user) throw new Error("login incorrect");
+			if (!user.favorites.includes(favorite)) throw new Error("favorite doesn't exist");
+
+			await User.updateOne({ _id: user._id }, { $pull: { favorites: favorite } });
 
 			user = await User.findOne({ username: username }).exec();
 			resolve(user);

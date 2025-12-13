@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import { getUser, getFavorites, addUser, addFavorite } from "../db/db.js";
+import { getUser, getFavorites, addUser, addFavorite, delFavorite } from "../db/db.js";
 
 export const cookieOpts =
 	process.env.NODE_ENV === "dev" ? { maxAge: 1000 * 60 * 60 * 24 * 2, httpOnly: true } : { maxAge: 1000 * 60 * 60 * 24 * 2, httpOnly: true, sameSite: "none", secure: true, partitioned: true };
@@ -104,6 +104,21 @@ export const favoriteHandler = async (req, res) => {
 		res.set("Content-Type", "text/plain");
 
 		console.error(`favorite ${favorite} not added to ${req.user.username}: ${err}`);
+		return res.sendStatus(500);
+	}
+};
+
+export const delFavoriteHandler = async (req, res) => {
+	const { favorite } = req.body;
+
+	try {
+		const userData = await delFavorite(req.user.username, favorite);
+
+		return res.status(200).json({ favorites: userData.favorites });
+	} catch (err) {
+		res.set("Content-Type", "text/plain");
+
+		console.error(`favorite ${favorite} not deleted from ${req.user.username}: ${err}`);
 		return res.sendStatus(500);
 	}
 };

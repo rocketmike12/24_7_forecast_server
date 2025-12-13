@@ -8,7 +8,7 @@ dotenv.config();
 import { connectDb } from "./config/connectDb.js";
 import mongoose from "mongoose";
 
-import { authenticateToken, loginHandler, registerHandler, sessionHandler, logoutHandler, favoriteHandler, cookieOpts } from "./handlers/auth.js";
+import { authenticateToken, loginHandler, registerHandler, sessionHandler, logoutHandler, favoriteHandler, delFavoriteHandler, cookieOpts } from "./handlers/auth.js";
 import { weatherHandler, forecastHandler } from "./handlers/weather.js";
 
 let whitelist = ["http://localhost:5173", "https://rocketmike12.github.io"];
@@ -38,9 +38,10 @@ app.post("/api/v0/auth/register/", registerHandler);
 app.post("/api/v0/auth/session/", authenticateToken, sessionHandler);
 app.post("/api/v0/auth/logout/", authenticateToken, logoutHandler);
 app.post("/api/v0/auth/favorite/", authenticateToken, favoriteHandler);
+app.post("/api/v0/auth/delfavorite/", authenticateToken, delFavoriteHandler);
 
-app.get("/api/v0/weather/weather", weatherHandler);
-app.get("/api/v0/weather/forecast", forecastHandler);
+app.get("/api/v0/weather/weather/", weatherHandler);
+app.get("/api/v0/weather/forecast/", forecastHandler);
 
 mongoose.connection.once("open", () => {
 	app.listen(8080, () => {
