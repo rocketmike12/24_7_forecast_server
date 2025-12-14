@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 
 import { authenticateToken, loginHandler, registerHandler, sessionHandler, logoutHandler, favoriteHandler, delFavoriteHandler, cookieOpts } from "./handlers/auth.js";
 import { weatherHandler, forecastHandler } from "./handlers/weather.js";
+import { newsHandler } from "./handlers/news.js";
 
 let whitelist = ["http://localhost:5173", "https://rocketmike12.github.io"];
 
@@ -42,6 +43,8 @@ app.post("/api/v0/auth/delfavorite/", authenticateToken, delFavoriteHandler);
 
 app.get("/api/v0/weather/weather/", weatherHandler);
 app.get("/api/v0/weather/forecast/", forecastHandler);
+
+app.get("/api/v0/news/", newsHandler);
 
 mongoose.connection.once("open", () => {
 	app.listen(8080, () => {
