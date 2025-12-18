@@ -71,6 +71,10 @@ export const registerHandler = async function (req, res) {
 	} catch (err) {
 		res.set("Content-Type", "text/plain");
 
+		if (err.message === "user already exists") {
+			return res.sendStatus(409);
+		}
+
 		console.error(`user ${username} not created: ${err.message}`);
 		return res.sendStatus(500);
 	}
