@@ -10,10 +10,10 @@ const newsApi = axios.create({
 
 export const newsHandler = async function (req, res) {
 	try {
-		const q = req.query.q;
+		const q = req.query;
 		if (!q) return res.sendStatus(406);
 
-		const { data } = await newsApi.get("/", { params: { q: q } });
+		const { data } = await newsApi.get("/", { params: q });
 
 		res.status(200).json(data);
 	} catch (err) {
