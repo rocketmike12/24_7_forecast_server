@@ -92,7 +92,7 @@ export const sessionHandler = function (req, res) {
 export const logoutHandler = async function (req, res) {
 	res.set("Content-Type", "text/plain");
 
-	res.clearCookie("authcookie");
+	res.clearCookie("authcookie", cookieOpts);
 
 	res.sendStatus(200);
 };
